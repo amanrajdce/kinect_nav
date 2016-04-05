@@ -17,12 +17,14 @@ cv2.moveWindow('Navig',700,5)
 kernel = np.ones((5, 5), np.uint8)
 
 
-print('Press \'b\' in window to stop')
+print('Press ESC in window to stop')
 cv2.createTrackbar('val1', 'Video', 37, 1000, nothing)
 cv2.createTrackbar('val2', 'Video', 43, 1000, nothing)
 cv2.createTrackbar('bin', 'Video',20,50,nothing)
 cv2.createTrackbar('erode', 'Video',4,10,nothing)#after plenty of testing
-imn=cv2.imread('blank.bmp')
+imn=cv2.imread('img/blank.bmp')
+im0=cv2.imread("img/Collision Alert.bmp")
+im1=cv2.imread("img/VCP Reverse.bmp")
 #cv2.createTrackbar('dilate', 'edge',0,10,nothing)
 def pretty_depth(depth):
     np.clip(depth, 0, 2**10 - 1, depth)
@@ -31,13 +33,9 @@ def pretty_depth(depth):
     return depth
 
 while 1:
-	imn=cv2.imread('blank.bmp')
 	cv2.imshow('Navig',imn)
 	flag120=[1, 1, 1, 1]
-	flag140=[1, 1, 1, 1]
-	f14=0
 	f12=0
-	f10=0
 	f8=0
 #get kinect input__________________________________________________________________________
 	dst = pretty_depth(freenect.sync_get_depth()[0])#input from kinect
@@ -74,7 +72,7 @@ while 1:
     	cv2.drawContours(dst, contours, -1, (0, 0, 255), -1)
     #cv2.drawContours(orig, contours, -1, (0, 0, 255), -1)
 #finding contour center of mass (moments)___________________________________________________
-    	'''cx=0
+    	cx=0
     	cy=0
     	try:
         	for i in range(len(contours)):
@@ -86,7 +84,7 @@ while 1:
            # cx = int(cx/len(contours))
            # cy = int(cy/len(contours))
     	except:
-      		pass'''
+      		pass
 
 #boundingRect approach_______________________________________________________________________
     	cv2.createTrackbar('epsilon', 'Video', 1, 100, nothing)#for approxPolyDP
@@ -119,27 +117,32 @@ while 1:
 				f8=1
 				cv2.putText(dst,"0",(spac*j,spac*i),cv2.FONT_HERSHEY_PLAIN,1,(0,200,20),2)
 				cv2.putText(dst,"Collision Alert!",(30,30),cv2.FONT_HERSHEY_TRIPLEX,1,(2),1)
-				imn=cv2.imread("Collision Alert.bmp")
-				cv2.imshow('Navig',imn)
+				cv2.imshow('Navig',im0)
 			if (dst[spac*i,spac*j]==100):
-				f10=1
 				cv2.putText(dst,"1",(spac*j,spac*i),cv2.FONT_HERSHEY_PLAIN,1,(0,200,20),2)
 				cv2.putText(dst,"Very Close proximity. Reverse",(30,60),cv2.FONT_HERSHEY_TRIPLEX,1,(2),1)
 				if(f8==0):
-					imn=cv2.imread("VCP Reverse.bmp")
-					cv2.imshow('Navig',imn)
+					cv2.imshow('Navig',im1)
 			if (dst[spac*i,spac*j]==120):
 				f12=1
-                		cv2.putText(dst, "2", (spac*j, spac*i), cv2.FONT_HERSHEY_PLAIN, 1, (0, 200, 20), 2)
-                		flag120 = RegionCheck(spac*j, flag120)
-				if(f8==0 and f10==0):
-					imgshow(flag120,120,imn,'Navig')
+				cv2.putText(dst,"2",(spac*j,spac*i),cv2.FONT_HERSHEY_PLAIN,1,(0),1)
+				cv2.putText(dst,"Close proximity.Go      immediately",(30,90),cv2.FONT_HERSHEY_DUPLEX,1,(2),1)
+				
+				#print spac*j
+				if(spac*j<=130):
+					flag120[0]=0					
+				if(spac*j>130 and spac*j<=320):
+					flag120[1]=0
+				if(spac*j>320 and spac*j<=510):
+					flag120[2]=0
+				if(spac*j>510):
+					flag120[3]=0
+				#print flag0, flag1, flag2, flag3
+				
+
+				
 			if (dst[spac*i,spac*j]==140):
-				f14=1
 				cv2.putText(dst,"3",(spac*j,spac*i),cv2.FONT_HERSHEY_PLAIN,1,(0,200,20),1)
-				flag140 = RegionCheck(spac*j, flag140)
-				if(f8==0 and f10==0 and f12==0):
-					imgshow(flag140,140,imn,'Navig')
 			if (dst[spac*i,spac*j]==160):
 				cv2.putText(dst,"4",(spac*j,spac*i),cv2.FONT_HERSHEY_PLAIN,1,(0,200,20),1)
 			if (dst[spac*i,spac*j]==180):
